@@ -249,7 +249,7 @@ class OnPolicyTrainer:
                 scaled_loss = stats["loss"] / self.args.gradient_accumulation_steps
                 scaled_loss.backward()
 
-                accum_loss += float(stats["loss"])
+                accum_loss += float(stats["loss"].detach())
                 for k, v in stats.items():
                     if k == "loss":
                         continue
@@ -335,7 +335,7 @@ class OnPolicyTrainer:
             cls = AutoModelForImageTextToText if _is_multimodal(cfg) else AutoModelForCausalLM
             base = cls.from_pretrained(
                 self.args.student_model_path,
-                torch_dtype=torch.bfloat16,
+                dtype=torch.bfloat16,
                 trust_remote_code=True,
             )
             merged = PeftModel.from_pretrained(base, adapter_dir)

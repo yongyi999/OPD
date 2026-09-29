@@ -150,11 +150,26 @@ def parse_arguments() -> OPDArguments:
 
     # 根据 dataclass 字段自动注册所有参数
     valid_names = {f.name for f in fields(OPDArguments)}
+    type_map = {f.name: f.type for f in fields(OPDArguments)}
+
+    def _py_type(name: str):
+        """返回字段声明对应的 Python 基础类型（int/float/str）。"""
+        t = type_map.get(name, str)
+        # 注解可能是类对象（int）或字符串（"int" / "Optional[int]"）
+        if t is int or t in ("int", "Optional[int]"):
+            return int
+        if t is float or t in ("float", "Optional[float]"):
+            return float
+        return str
+
+    def _arg_type(name: str):
+        return _py_type(name)
+
     for f in fields(OPDArguments):
         if f.name == "config":
             continue
         ftype = f.type
-        # 简单的类型推断（bool 单独处理）
+        # bool 单独处理
         if ftype == "bool" or f.default is True or f.default is False:
             parser.add_argument(
                 f"--{f.name}",
@@ -163,7 +178,7 @@ def parse_arguments() -> OPDArguments:
                 help=f"YAML key: {f.name}",
             )
         else:
-            parser.add_argument(f"--{f.name}", type=str, default=None)
+            parser.add_argument(f"--{f.name}", type=_arg_type(f.name), default=None)
 
     args = parser.parse_args()
     cli_dict = {k: v for k, v in vars(args).items() if v is not None and k in valid_names}
@@ -173,4 +188,16 @@ def parse_arguments() -> OPDArguments:
     merged = {**defaults, **yaml_cfg, **cli_dict}
     # 过滤掉非法字段
     merged = {k: v for k, v in merged.items() if k in valid_names}
+    # 对 YAML 来源的值做一次类型兜底（防止 YAML 写成字符串）
+    for k, v in list(merged.items()):
+        if not isinstance(v, str):
+            continue
+        py_t = _py_type(k)
+        if py_t is int and v.lstrip("-").isdigit():
+            merged[k] = int(v)
+        elif py_t is float:
+            try:
+                merged[k] = float(v)
+            except ValueError:
+                pass
     return OPDArguments(**merged)
