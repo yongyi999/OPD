@@ -1,0 +1,67 @@
+# On-Policy Distillation 默认配置（RTX 5090 32GB 单卡）
+# 学生：Qwen3.5-0.8B（多模态混合架构，文本训练）
+# 教师：DeepSeek-R1-Distill-Qwen-7B（冻结，提供 token 级分布）
+
+# ---------------- 模型 ----------------
+student_model_path: models/Qwen3.5-0.8B
+teacher_model_path: models/DeepSeek-R1-Distill-Qwen-7B
+model_dtype: bf16
+attn_implementation: auto
+gradient_checkpointing: true
+use_lora: true
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.0
+lora_target_modules: auto
+teacher_cpu_offload: false
+
+# ---------------- 数据 ----------------
+data_path: data/example_prompts.jsonl
+prompt_field: prompt
+max_prompt_length: 1024
+max_response_length: 1024
+max_train_samples: -1
+shuffle_data: true
+system_prompt: ""
+
+# ---------------- Rollout ----------------
+num_rollouts: 4
+temperature: 1.0
+top_p: 0.95
+repetition_penalty: 1.0
+teacher_mix_ratio: 0.0
+
+# ---------------- 蒸馏 ----------------
+kl_mode: auto        # 跨 tokenizer 自动使用 overlap
+top_k: 16
+kl_temperature: 1.0
+teacher_temperature: 1.0
+kd_ratio: 1.0
+loss_agg_mode: token-mean
+logits_token_chunk: 256
+
+# ---------------- 训练 ----------------
+output_dir: runs/opd
+num_train_epochs: 1
+max_steps: -1
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+weight_decay: 0.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+optim: adamw_torch
+seed: 42
+save_steps: 100
+log_steps: 1
+dataloader_num_workers: 0
+preview_steps: 50
+merge_after_train: false
+
+# ---------------- SwanLab ----------------
+swanlab_mode: online
+swanlab_project: on-policy-distillation
+swanlab_entity:
+swanlab_experiment_name: ""
+swanlab_logdir: runs/swanlab

@@ -1,0 +1,50 @@
+# =====================================================================
+# On-Policy Distillation 依赖（AutoDL：RTX 5090 / Ubuntu / Python 3.12）
+# =====================================================================
+# 【重要】RTX 5090 是 Blackwell 架构（sm_120），必须先安装 CUDA 12.8
+# 版本的 PyTorch 2.8.0，不能直接用默认源的 wheel：
+#   pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+# 已安装 torch 后再执行：pip install -r requirements.txt
+torch==2.8.0
+
+# ---- 模型与训练 ----
+# transformers 5.2.0 起原生支持 Qwen3.5（qwen3_5），不要用 4.x
+transformers==5.2.0
+accelerate==1.13.0
+peft==0.19.1
+datasets==4.8.4
+
+# ---- 模型/数据下载（ModelScope，国内速度快）----
+modelscope==1.40.1
+# modelscope 数据集功能需要的小依赖
+addict>=2.4
+simplejson>=3.18
+sortedcontainers>=2.4
+
+# 【可选】Qwen3.5 混合架构（GatedDeltaNet 线性注意力）加速包：
+#   pip install causal-conv1d>=1.6.0 flash-linear-attention>=0.9.0
+# causal-conv1d 提供门控卷积 CUDA 内核，flash-linear-attention（fla）提供
+# 线性注意力快速内核。不装也能运行，会自动回退到较慢的纯 PyTorch 实现。
+# 若安装失败可直接忽略，不影响训练正确性。
+
+# ---- 实验记录 ----
+swanlab==0.10.1
+
+# ---- 8-bit 优化器（可选，Linux 下使用 paged_adamw_8bit 时需要）----
+bitsandbytes==0.50.2
+
+# ---- 其他基础依赖 ----
+sentencepiece>=0.2.0
+protobuf>=4.25
+einops>=0.8
+tiktoken>=0.9
+tqdm>=4.67
+pyyaml>=6.0
+numpy>=1.26
+pandas>=2.2
+pyarrow>=18.0
+
+# 【可选】FlashAttention 2（Linux 且想进一步提速时安装，pip 可能需要
+# 编译，建议参考 https://github.com/Dao-AILab/flash-attention ）：
+#   pip install flash-attn --no-build-isolation
+# 不安装也能运行（默认 attn_implementation=auto，会使用 SDPA）

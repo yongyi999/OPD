@@ -1,0 +1,35 @@
+# 模型权重（在 AutoDL 上用 scripts/download_models.py 下载）
+models/
+!models/.gitkeep
+
+# 训练产物
+runs/
+!runs/.gitkeep
+
+# 大数据文件（小的 example 数据保留）
+data/*.parquet
+data/train_prompts.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# 日志
+logs/
+*.log
